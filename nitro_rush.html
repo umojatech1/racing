@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NITRO RUSH — Street Racing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --black: #080808;
+      --deep: #0d0d0d;
+      --surface: #141414;
+      --border: #222;
+      --accent: #ff3b00;
+      --accent2: #ffcc00;
+      --white: #f5f5f5;
+      --muted: #666;
+      --text: #ccc;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ROAD LINES ANIMATION */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 4px;
+      height: 200%;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--accent2) 0px,
+        var(--accent2) 40px,
+        transparent 40px,
+        transparent 90px
+      );
+      opacity: 0.04;
+      animation: roadLines 0.8s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes roadLines {
+      0% { top: -100%; }
+      100% { top: 0%; }
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.98), transparent);
+      backdrop-filter: blur(2px);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--white);
+    }
+    .logo span { color: var(--accent); }
+
+    nav ul {
+      list-style: none;
+      display: flex; gap: 36px;
+    }
+    nav ul a {
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--white); }
+
+    .nav-btn {
+      background: var(--accent);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border: none;
+      cursor: pointer;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: background 0.2s;
+    }
+    .nav-btn:hover { background: #cc2e00; }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: flex-start; justify-content: center;
+      padding: 0 48px;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 50%, rgba(255,59,0,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 60%, rgba(255,204,0,0.05) 0%, transparent 60%),
+        linear-gradient(135deg, #080808 0%, #0f0f0f 100%);
+      z-index: 0;
+    }
+
+    /* SPEED LINES */
+    .speed-lines {
+      position: absolute; inset: 0; z-index: 1; overflow: hidden;
+    }
+    .speed-line {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,59,0,0.3), transparent);
+      animation: speedLine 1.5s linear infinite;
+      opacity: 0;
+    }
+    @keyframes speedLine {
+      0%   { transform: translateX(-100%); opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateX(100%); opacity: 0; }
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 700px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(255,59,0,0.4);
+      padding: 5px 14px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 10vw, 140px);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      color: var(--white);
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
+    h1 .accent { color: var(--accent); }
+    h1 .yellow  { color: var(--accent2); }
+
+    .hero-sub {
+      margin-top: 24px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 460px;
+      animation: fadeUp 0.7s ease 0.45s both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 16px;
+      margin-top: 36px;
+      animation: fadeUp 0.7s ease 0.6s both;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 14px 32px;
+      border: none; cursor: pointer;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: #e03200; transform: translateY(-2px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 14px 28px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      text-decoration: none;
+    }
+    .btn-secondary:hover { border-color: #444; color: var(--white); }
+
+    /* STATS BAR */
+    .stats-bar {
+      position: relative; z-index: 2;
+      display: flex; gap: 0;
+      margin-top: 64px;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      animation: fadeUp 0.7s ease 0.75s both;
+    }
+    .stat {
+      flex: 1;
+      padding-right: 32px;
+      border-right: 1px solid var(--border);
+      margin-right: 32px;
+    }
+    .stat:last-child { border-right: none; margin-right: 0; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-num span { color: var(--accent); }
+    .stat-label {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* CAR SILHOUETTE */
+    .car-silhouette {
+      position: absolute;
+      right: -40px; bottom: 80px;
+      z-index: 2;
+      opacity: 0.85;
+      animation: carFloat 3s ease-in-out infinite, fadeIn 1s ease 0.5s both;
+    }
+    @keyframes carFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 0.85; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SECTION COMMON */
+    section { position: relative; z-index: 1; }
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 60px);
+      letter-spacing: 2px;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    /* CARS SECTION */
+    .cars-section {
+      padding: 100px 48px;
+      background: var(--deep);
+    }
+    .cars-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .cars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .car-card {
+      background: var(--surface);
+      padding: 32px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: pointer;
+    }
+    .car-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+    .car-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 0;
+      background: var(--accent);
+      transition: height 0.3s;
+    }
+    .car-card:hover::before { height: 100%; }
+
+    .car-class {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .car-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 1px;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .car-model {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .car-svg { margin: 16px 0 24px; display: flex; justify-content: center; }
+
+    .car-stats {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .stat-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .stat-row-label {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      width: 60px; flex-shrink: 0;
+    }
+    .stat-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .stat-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+    .stat-fill.yellow { background: var(--accent2); }
+    .stat-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+      width: 28px; text-align: right;
+    }
+
+    /* TRACKS */
+    .tracks-section {
+      padding: 100px 48px;
+    }
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      margin-top: 48px;
+    }
+    .track-card {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16/7;
+      cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .track-bg {
+      position: absolute; inset: 0;
+      transition: transform 0.5s ease;
+    }
+    .track-card:hover .track-bg { transform: scale(1.04); }
+    .track-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(8,8,8,0.92) 0%, rgba(8,8,8,0.3) 60%, transparent 100%);
+    }
+    .track-info {
+      position: absolute; bottom: 28px; left: 28px; right: 28px;
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .track-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--white);
+    }
+    .track-country {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .track-badge {
+      background: var(--accent);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--white);
+      padding: 5px 12px;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    }
+    .track-badge.new { background: var(--accent2); color: var(--black); }
+
+    /* LEADERBOARD */
+    .leaderboard-section {
+      padding: 100px 48px;
+      background: var(--deep);
+    }
+    .leaderboard-table {
+      margin-top: 48px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .lb-header {
+      display: grid;
+      grid-template-columns: 60px 1fr 140px 120px 100px;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-header span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .lb-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 140px 120px 100px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      align-items: center;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: rgba(255,255,255,0.02); }
+    .lb-rank {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--muted);
+    }
+    .lb-rank.top { color: var(--accent2); }
+    .lb-player {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .lb-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+    .lb-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px; font-weight: 600;
+      color: var(--white);
+    }
+    .lb-car-tag {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .lb-time {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+    .lb-wins {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--white);
+    }
+    .lb-badge {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 3px 10px;
+      border: 1px solid;
+    }
+    .lb-badge.legend { color: var(--accent2); border-color: rgba(255,204,0,0.4); }
+    .lb-badge.pro    { color: var(--accent);  border-color: rgba(255,59,0,0.4); }
+    .lb-badge.rookie { color: #48b0f7; border-color: rgba(72,176,247,0.4); }
+
+    /* CTA */
+    .cta-section {
+      padding: 100px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,59,0,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section .section-title {
+      font-size: clamp(48px, 8vw, 96px);
+      max-width: 700px;
+      margin: 16px auto 24px;
+    }
+    .cta-sub {
+      font-size: 16px; color: var(--muted);
+      max-width: 400px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .cta-actions { display: flex; gap: 16px; justify-content: center; }
+
+    /* FOOTER */
+    footer {
+      padding: 32px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: 3px;
+      color: var(--white);
+    }
+    .footer-logo span { color: var(--accent); }
+    footer p { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+    .footer-links {
+      display: flex; gap: 24px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 12px; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      nav ul { display: none; }
+      .hero, .cars-section, .tracks-section, .leaderboard-section, .cta-section, footer {
+        padding-left: 24px; padding-right: 24px;
+      }
+      .cars-grid { grid-template-columns: 1fr; }
+      .tracks-grid { grid-template-columns: 1fr; }
+      .car-silhouette { display: none; }
+      .lb-header, .lb-row {
+        grid-template-columns: 48px 1fr 100px;
+      }
+      .lb-wins, .lb-badge { display: none; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+      .cta-actions { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">NITRO<span>RUSH</span></div>
+  <ul>
+    <li><a href="#cars">Cars</a></li>
+    <li><a href="#tracks">Tracks</a></li>
+    <li><a href="#leaderboard">Leaderboard</a></li>
+  </ul>
+  <button class="nav-btn">Play Now</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="speed-lines" id="speedLines"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">&#9679; Season 4 Live Now</div>
+    <h1>
+      PUSH<br>
+      THE <span class="accent">LIMIT</span><br>
+      <span class="yellow">FAST.</span>
+    </h1>
+    <p class="hero-sub">
+      Dominate neon-lit streets, mountain passes, and desert circuits. Tune your ride. Master the apex. Leave the competition in the dust.
+    </p>
+    <div class="hero-actions">
+      <a href="#cars" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="3,1 13,7 3,13" fill="white"/></svg>
+        Start Racing
+      </a>
+      <a href="#leaderboard" class="btn-secondary">View Rankings</a>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">48<span>+</span></div>
+        <div class="stat-label">Vehicles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">12<span>+</span></div>
+        <div class="stat-label">Tracks</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2.4<span>M</span></div>
+        <div class="stat-label">Players</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG Car Silhouette -->
+  <div class="car-silhouette">
+    <svg width="560" height="220" viewBox="0 0 560 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <path d="M60 140 L100 100 L160 75 L260 65 L360 68 L430 90 L480 120 L500 140 Z" fill="#1a1a1a" stroke="#333" stroke-width="1.5"/>
+      <!-- Cabin -->
+      <path d="M160 100 L185 72 L260 60 L330 62 L360 80 L360 100 Z" fill="#111" stroke="#2a2a2a" stroke-width="1"/>
+      <!-- Windshield -->
+      <path d="M190 98 L205 74 L255 64 L320 66 L352 84 L352 98 Z" fill="#1e1e1e" stroke="rgba(255,59,0,0.2)" stroke-width="1"/>
+      <!-- Ground shadow -->
+      <ellipse cx="280" cy="160" rx="220" ry="10" fill="rgba(255,59,0,0.05)"/>
+      <!-- Wheels -->
+      <circle cx="148" cy="148" r="30" fill="#0d0d0d" stroke="#2a2a2a" stroke-width="3"/>
+      <circle cx="148" cy="148" r="18" fill="#141414" stroke="#ff3b00" stroke-width="1.5"/>
+      <circle cx="148" cy="148" r="6" fill="#ff3b00"/>
+      <circle cx="400" cy="148" r="30" fill="#0d0d0d" stroke="#2a2a2a" stroke-width="3"/>
+      <circle cx="400" cy="148" r="18" fill="#141414" stroke="#ff3b00" stroke-width="1.5"/>
+      <circle cx="400" cy="148" r="6" fill="#ff3b00"/>
+      <!-- Headlights -->
+      <rect x="476" y="118" width="20" height="8" rx="2" fill="#ffcc00" opacity="0.9"/>
+      <rect x="476" y="118" width="40" height="8" rx="1" fill="url(#headlight)" opacity="0.4"/>
+      <!-- Tail -->
+      <rect x="56" y="122" width="12" height="8" rx="2" fill="#ff3b00" opacity="0.8"/>
+      <!-- Accent stripe -->
+      <line x1="100" y1="120" x2="460" y2="120" stroke="rgba(255,59,0,0.15)" stroke-width="1"/>
+      <defs>
+        <linearGradient id="headlight" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#ffcc00"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- CARS -->
+<section class="cars-section" id="cars">
+  <div class="cars-header">
+    <div>
+      <div class="section-label">&#9632; Garage</div>
+      <div class="section-title">Choose Your Machine</div>
+    </div>
+    <a href="#" class="btn-secondary" style="font-size:13px; padding:10px 22px;">View All Cars</a>
+  </div>
+
+  <div class="cars-grid">
+    <!-- Card 1 -->
+    <div class="car-card">
+      <div class="car-class">S-Class &#8250; Street</div>
+      <div class="car-name">PHANTOM GT</div>
+      <div class="car-model">2025 — Turbocharged V8</div>
+      <div class="car-svg">
+        <svg width="200" height="80" viewBox="0 0 200 80" fill="none">
+          <path d="M20 55 L35 38 L60 28 L100 24 L130 26 L158 38 L175 52 L180 58 Z" fill="#1a1a1a" stroke="#333" stroke-width="1.2"/>
+          <path d="M60 38 L72 27 L100 22 L125 23 L138 32 L138 38 Z" fill="#111" stroke="#222" stroke-width="0.8"/>
+          <circle cx="52" cy="57" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="52" cy="57" r="5" fill="#ff3b00"/>
+          <circle cx="145" cy="57" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="145" cy="57" r="5" fill="#ff3b00"/>
+          <rect x="173" y="45" width="6" height="4" rx="1" fill="#ffcc00" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="car-stats">
+        <div class="stat-row">
+          <span class="stat-row-label">Speed</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:92%"></div></div>
+          <span class="stat-val">92</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Accel</span>
+          <div class="stat-bar"><div class="stat-fill yellow" style="width:85%"></div></div>
+          <span class="stat-val">85</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Grip</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:78%"></div></div>
+          <span class="stat-val">78</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="car-card">
+      <div class="car-class">A-Class &#8250; Track</div>
+      <div class="car-name">VIPER RSX</div>
+      <div class="car-model">2024 — Twin-Turbo Flat-6</div>
+      <div class="car-svg">
+        <svg width="200" height="80" viewBox="0 0 200 80" fill="none">
+          <path d="M15 56 L38 35 L65 26 L105 22 L135 24 L162 36 L178 54 L182 60 Z" fill="#1a1a1a" stroke="#333" stroke-width="1.2"/>
+          <path d="M65 35 L80 24 L105 20 L128 21 L142 30 L142 35 Z" fill="#111" stroke="#222" stroke-width="0.8"/>
+          <circle cx="55" cy="58" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="55" cy="58" r="5" fill="#ff3b00"/>
+          <circle cx="148" cy="58" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="148" cy="58" r="5" fill="#ff3b00"/>
+          <rect x="176" y="44" width="6" height="4" rx="1" fill="#ffcc00" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="car-stats">
+        <div class="stat-row">
+          <span class="stat-row-label">Speed</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:80%"></div></div>
+          <span class="stat-val">80</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Accel</span>
+          <div class="stat-bar"><div class="stat-fill yellow" style="width:95%"></div></div>
+          <span class="stat-val">95</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Grip</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:90%"></div></div>
+          <span class="stat-val">90</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="car-card">
+      <div class="car-class">B-Class &#8250; Drift</div>
+      <div class="car-name">KATANA</div>
+      <div class="car-model">2023 — NA V6 Naturally Aspirated</div>
+      <div class="car-svg">
+        <svg width="200" height="80" viewBox="0 0 200 80" fill="none">
+          <path d="M22 56 L42 38 L70 29 L108 25 L132 27 L155 40 L170 55 L175 60 Z" fill="#1a1a1a" stroke="#333" stroke-width="1.2"/>
+          <path d="M70 38 L84 28 L108 23 L128 24 L140 33 L140 38 Z" fill="#111" stroke="#222" stroke-width="0.8"/>
+          <circle cx="58" cy="58" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="58" cy="58" r="5" fill="#ff3b00"/>
+          <circle cx="142" cy="58" r="11" fill="#0d0d0d" stroke="#ff3b00" stroke-width="1.5"/>
+          <circle cx="142" cy="58" r="5" fill="#ff3b00"/>
+          <rect x="168" y="44" width="6" height="4" rx="1" fill="#ffcc00" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="car-stats">
+        <div class="stat-row">
+          <span class="stat-row-label">Speed</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:70%"></div></div>
+          <span class="stat-val">70</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Accel</span>
+          <div class="stat-bar"><div class="stat-fill yellow" style="width:75%"></div></div>
+          <span class="stat-val">75</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-row-label">Grip</span>
+          <div class="stat-bar"><div class="stat-fill" style="width:98%"></div></div>
+          <span class="stat-val">98</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACKS -->
+<section class="tracks-section" id="tracks">
+  <div class="section-label">&#9632; Circuits</div>
+  <div class="section-title">Race the World</div>
+
+  <div class="tracks-grid">
+    <div class="track-card">
+      <div class="track-bg" style="background: linear-gradient(135deg, #1a0a00 0%, #2d1500 40%, #0a0a0a 100%);"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.08" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,140 Q100,40 200,60 Q300,80 350,40" stroke="#ff3b00" stroke-width="3" fill="none"/>
+        <path d="M50,150 Q100,50 200,70 Q300,90 350,50" stroke="#ff3b00" stroke-width="1" fill="none" stroke-dasharray="6,4"/>
+      </svg>
+      <div class="track-overlay"></div>
+      <div class="track-info">
+        <div>
+          <div class="track-name">TOKYO STREETS</div>
+          <div class="track-country">Japan &#8250; Urban Night</div>
+        </div>
+        <div class="track-badge">Featured</div>
+      </div>
+    </div>
+
+    <div class="track-card">
+      <div class="track-bg" style="background: linear-gradient(135deg, #00100a 0%, #001a10 40%, #0a0a0a 100%);"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.08" viewBox="0 0 400 180">
+        <path d="M30,90 Q80,20 160,50 Q240,80 300,30 Q350,10 370,90" stroke="#48b0f7" stroke-width="3" fill="none"/>
+        <path d="M30,100 Q80,30 160,60 Q240,90 300,40 Q350,20 370,100" stroke="#48b0f7" stroke-width="1" fill="none" stroke-dasharray="6,4"/>
+      </svg>
+      <div class="track-overlay"></div>
+      <div class="track-info">
+        <div>
+          <div class="track-name">MOUNTAIN PASS</div>
+          <div class="track-country">Switzerland &#8250; Alpine</div>
+        </div>
+        <div class="track-badge new">New</div>
+      </div>
+    </div>
+
+    <div class="track-card">
+      <div class="track-bg" style="background: linear-gradient(135deg, #100800 0%, #1a1200 40%, #0a0a0a 100%);"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.08" viewBox="0 0 400 180">
+        <ellipse cx="200" cy="90" rx="150" ry="60" stroke="#ffcc00" stroke-width="3" fill="none"/>
+        <ellipse cx="200" cy="90" rx="130" ry="44" stroke="#ffcc00" stroke-width="1" fill="none" stroke-dasharray="6,4"/>
+      </svg>
+      <div class="track-overlay"></div>
+      <div class="track-info">
+        <div>
+          <div class="track-name">DESERT OVAL</div>
+          <div class="track-country">Dubai &#8250; Open Desert</div>
+        </div>
+        <div class="track-badge">Classic</div>
+      </div>
+    </div>
+
+    <div class="track-card">
+      <div class="track-bg" style="background: linear-gradient(135deg, #0a000f 0%, #150020 40%, #0a0a0a 100%);"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.08" viewBox="0 0 400 180">
+        <path d="M40,150 L80,40 L160,80 L240,20 L310,70 L370,150" stroke="#cc44ff" stroke-width="3" fill="none"/>
+        <path d="M40,160 L80,50 L160,90 L240,30 L310,80 L370,160" stroke="#cc44ff" stroke-width="1" fill="none" stroke-dasharray="6,4"/>
+      </svg>
+      <div class="track-overlay"></div>
+      <div class="track-info">
+        <div>
+          <div class="track-name">NEON CIRCUIT</div>
+          <div class="track-country">Las Vegas &#8250; Synthwave</div>
+        </div>
+        <div class="track-badge new">Season 4</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEADERBOARD -->
+<section class="leaderboard-section" id="leaderboard">
+  <div class="section-label">&#9632; Rankings</div>
+  <div class="section-title">Top Racers</div>
+
+  <div class="leaderboard-table">
+    <div class="lb-header">
+      <span>Rank</span>
+      <span>Driver</span>
+      <span>Best Lap</span>
+      <span>Track</span>
+      <span>Wins</span>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank top">#1</div>
+      <div class="lb-player">
+        <div class="lb-avatar" style="background:#2a1500;">⚡</div>
+        <div>
+          <div class="lb-name">SHADOWDRIFT</div>
+          <div class="lb-car-tag">Phantom GT &#8250; S-Class</div>
+        </div>
+      </div>
+      <div class="lb-time">1:24.338</div>
+      <div><span class="lb-badge legend">Legend</span></div>
+      <div class="lb-wins">312</div>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank top">#2</div>
+      <div class="lb-player">
+        <div class="lb-avatar" style="background:#001020;">🔥</div>
+        <div>
+          <div class="lb-name">VEXON_7</div>
+          <div class="lb-car-tag">Viper RSX &#8250; A-Class</div>
+        </div>
+      </div>
+      <div class="lb-time">1:25.012</div>
+      <div><span class="lb-badge legend">Legend</span></div>
+      <div class="lb-wins">289</div>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank top">#3</div>
+      <div class="lb-player">
+        <div class="lb-avatar" style="background:#001500;">🌀</div>
+        <div>
+          <div class="lb-name">KIRA_BLAZE</div>
+          <div class="lb-car-tag">Katana &#8250; B-Class</div>
+        </div>
+      </div>
+      <div class="lb-time">1:25.891</div>
+      <div><span class="lb-badge pro">Pro</span></div>
+      <div class="lb-wins">194</div>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank">#4</div>
+      <div class="lb-player">
+        <div class="lb-avatar" style="background:#100010;">💨</div>
+        <div>
+          <div class="lb-name">NITRO_GHOST</div>
+          <div class="lb-car-tag">Phantom GT &#8250; S-Class</div>
+        </div>
+      </div>
+      <div class="lb-time">1:26.447</div>
+      <div><span class="lb-badge pro">Pro</span></div>
+      <div class="lb-wins">155</div>
+    </div>
+
+    <div class="lb-row">
+      <div class="lb-rank">#5</div>
+      <div class="lb-player">
+        <div class="lb-avatar" style="background:#001010;">🏁</div>
+        <div>
+          <div class="lb-name">TURBO_ACE</div>
+          <div class="lb-car-tag">Viper RSX &#8250; A-Class</div>
+        </div>
+      </div>
+      <div class="lb-time">1:27.209</div>
+      <div><span class="lb-badge rookie">Rookie</span></div>
+      <div class="lb-wins">82</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="section-label">&#9632; Get Started</div>
+  <div class="section-title">Ready to Race?</div>
+  <p class="cta-sub">Join over 2 million drivers. Free to play. No limits.</p>
+  <div class="cta-actions">
+    <a href="#" class="btn-primary" style="font-size:16px; padding:16px 40px;">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="3,1 13,7 3,13" fill="white"/></svg>
+      Play Free Now
+    </a>
+    <a href="#" class="btn-secondary" style="font-size:15px; padding:16px 32px;">Watch Trailer</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">NITRO<span>RUSH</span></div>
+  <p>© 2026 NitroRush Studios. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Support</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Speed lines
+  const container = document.getElementById('speedLines');
+  for (let i = 0; i < 18; i++) {
+    const line = document.createElement('div');
+    line.className = 'speed-line';
+    const top = Math.random() * 100;
+    const width = 100 + Math.random() * 250;
+    const delay = Math.random() * 3;
+    const duration = 1.2 + Math.random() * 1.2;
+    line.style.cssText = `top:${top}%;width:${width}px;animation-delay:${delay}s;animation-duration:${duration}s;`;
+    container.appendChild(line);
+  }
+</script>
+</body>
+</html>
